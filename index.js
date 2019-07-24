@@ -1,7 +1,6 @@
-
 'use strict'
 
-const mosca = require('mosca');
+var mqtt = require('mqtt')
 const {
   TOGGLE_LIGHT,
   SPEED_STOP,
@@ -20,19 +19,19 @@ module.exports = function (homebridge) {
 };
 
 class K5SFanController {
-  constructor(log, { port = 1883 }) {
+  constructor(log, { port = 1883, brokerAddress = 'localhost' }) {
 
-    // Ideally, this would be a client and it would connect to an external MQTT broker
-    const server = this.server = new mosca.Server({ port });
+    var client = this.client = client = mqtt.connect(`mqtt://${brokerAddress}:${port}`)
+
+    client.on('connect', function () {
+      client.subscribe('presence', function (err) {
+        if (!err) {
+          client.publish('presence', 'Hello mqtt')
+        }
+      })
+    })
+
     this.log = log
-
-    server.on('ready', () => log(`Mosca server is up and running on port ${1883}`));
-
-    server.on('published', ({ payload }) => log(`Published ${payload.toString('utf8')}`));
-
-    server.on('clientConnected', client => log(`Client Connected: ${client.id}`));
-
-    server.on('clientDisconnected', client => log(`Client Disconnected: ${client.id}`));
   }
 
   state = {
@@ -41,12 +40,7 @@ class K5SFanController {
   };
 
   sendCommand(payload, callback) {
-    this.server.publish({
-      topic: '/fan/control',
-      payload,
-      qos: 2,
-      retain: false
-    }, callback);
+    this.client.publish('/fan/control', payload, { qos: 2 }, callback)
   }
 
   identify(callback) {

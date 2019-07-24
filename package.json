@@ -1,6 +1,6 @@
 {
   "name": "homebridge-k5s-fan-controller",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "mosca": "^2.8.3"
+    "mqtt": "^3.0.0"
   }
 }
