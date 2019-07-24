@@ -102,7 +102,7 @@ class K5SFanController {
       return;
     }
     this.sendCommand(TOGGLE_LIGHT, callback);
-    this.light_on = value;
+    this.state.light_on = value;
     this.log(`Light has been turned ${value ? 'on' : 'off'}`);
   };
 
