@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-fan",
+  "name": "homebridge-k5s-fan-controller",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

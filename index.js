@@ -21,23 +21,18 @@ module.exports = function (homebridge) {
 
 class K5SFanController {
   constructor(log, { port = 1883 }) {
+
+    // Ideally, this would be a client and it would connect to an external MQTT broker
     const server = this.server = new mosca.Server({ port });
     this.log = log
 
-    server.on('ready', () => console.log('Mosca server is up and running'));
+    server.on('ready', () => log(`Mosca server is up and running on port ${1883}`));
 
-    server.on('published', ({ payload }) => {
-      console.log('Published', payload.toString('utf8'));
-    });
+    server.on('published', ({ payload }) => log(`Published ${payload.toString('utf8')}`));
 
-    server.on('clientConnected', client => {
-      console.log('Client Connected:', client.id);
-    });
+    server.on('clientConnected', client => log(`Client Connected: ${client.id}`));
 
-
-    server.on('clientDisconnected', client => {
-      console.log('Client Disconnected:', client.id);
-    });
+    server.on('clientDisconnected', client => log(`Client Disconnected: ${client.id}`));
   }
 
   state = {
@@ -66,6 +61,7 @@ class K5SFanController {
     let lastError = null;
     const setFanSpeedHandler = (value, callback) => {
       // This is terrible, but the event emitter doesn't emit the next event until callback is called
+      // I think this can go away if I debounce on the client instead.
       if (lastError) {
         callback(lastError);
         lastError = null;
@@ -100,8 +96,14 @@ class K5SFanController {
 
   setLightState(value, callback) {
     this.log(`Setting light state to ${value}`);
+    if (this.state.light_on === value) {
+      this.log(`Light is already ${value ? 'on' : 'off'}, ignoring`);
+      callback();
+      return;
+    }
     this.sendCommand(TOGGLE_LIGHT, callback);
     this.light_on = value;
+    this.log(`Light has been turned ${value ? 'on' : 'off'}`);
   };
 
   setFanSpeed(value, callback) {
@@ -116,5 +118,6 @@ class K5SFanController {
       this.sendCommand(SPEED_STOP, callback)
     }
     this.state.fan_speed = value;
+    this.log(`Fan speed has been set to ${value}`);
   };
 }
